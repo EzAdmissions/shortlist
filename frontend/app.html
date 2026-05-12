@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shortlist</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #ffffff; --bg-secondary: #f9f9f8; --bg-tertiary: #f2f1ee;
+      --text-primary: #1a1a18; --text-secondary: #6b6b67; --text-muted: #9b9b96;
+      --border: rgba(0,0,0,0.12); --border-mid: rgba(0,0,0,0.22);
+      --accent: #1a1a18; --accent-fg: #ffffff;
+      --info-bg: #e6f1fb; --info-text: #185fa5;
+      --success-bg: #eaf3de; --success-text: #3b6d11;
+      --danger: #c0392b; --danger-bg: #fdf2f2;
+      --radius-md: 8px; --radius-lg: 12px;
+      --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'SF Mono', 'Fira Code', monospace;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1e1e1c; --bg-secondary: #252523; --bg-tertiary: #2c2c2a;
+        --text-primary: #f0ede8; --text-secondary: #9b9b96; --text-muted: #6b6b67;
+        --border: rgba(255,255,255,0.1); --border-mid: rgba(255,255,255,0.2);
+        --accent: #f0ede8; --accent-fg: #1a1a18;
+        --info-bg: #0c2d4a; --info-text: #85b7eb;
+        --success-bg: #173404; --success-text: #c0dd97;
+        --danger: #e57373; --danger-bg: #2a1010;
+      }
+    }
+    body { font-family: var(--font); background: var(--bg); color: var(--text-primary); min-height: 100vh; }
+
+    /* Topbar */
+    .topbar { border-bottom: 0.5px solid var(--border); padding: 0 2rem; height: 52px; display: flex; align-items: center; justify-content: space-between; background: var(--bg); position: sticky; top: 0; z-index: 100; }
+    .topbar-brand { font-size: 16px; font-weight: 600; letter-spacing: -0.3px; }
+    .topbar-right { display: flex; align-items: center; gap: 12px; }
+    .user-pill { font-size: 13px; color: var(--text-secondary); background: var(--bg-secondary); border: 0.5px solid var(--border); border-radius: 99px; padding: 4px 12px; }
+    .btn-signout { font-size: 13px; color: var(--text-secondary); background: transparent; border: none; cursor: pointer; padding: 4px 8px; border-radius: var(--radius-md); font-family: var(--font); }
+    .btn-signout:hover { background: var(--bg-secondary); color: var(--text-primary); }
+
+    /* Layout */
+    .main { max-width: 1060px; margin: 0 auto; padding: 2.5rem 2rem 4rem; }
+    .page-title { font-size: 22px; font-weight: 500; margin-bottom: 4px; }
+    .page-sub { font-size: 14px; color: var(--text-secondary); margin-bottom: 2rem; }
+
+    /* Cards */
+    .card { border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1.5rem; }
+    .card-title { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 1rem; }
+
+    /* Grid */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    @media (max-width: 620px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+    /* Form */
+    .field { display: flex; flex-direction: column; gap: 5px; position: relative; }
+    label { font-size: 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 500; }
+    input, select { height: 36px; border: 0.5px solid var(--border-mid); border-radius: var(--radius-md); background: var(--bg-secondary); color: var(--text-primary); font-size: 14px; padding: 0 12px; font-family: var(--font); outline: none; width: 100%; transition: border-color 0.15s; }
+    input:focus, select:focus { border-color: var(--accent); }
+
+    /* Autocomplete */
+    .autocomplete-list { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--bg); border: 0.5px solid var(--border-mid); border-radius: var(--radius-md); z-index: 200; max-height: 220px; overflow-y: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.08); display: none; }
+    .autocomplete-item { padding: 9px 14px; font-size: 14px; cursor: pointer; border-bottom: 0.5px solid var(--border); color: var(--text-primary); }
+    .autocomplete-item:last-child { border-bottom: none; }
+    .autocomplete-item:hover, .autocomplete-item.ac-active { background: var(--bg-secondary); }
+    .autocomplete-match { font-weight: 600; }
+
+    /* Buttons */
+    .search-row { display: flex; gap: 10px; align-items: flex-end; margin-top: 12px; }
+    .search-row .field { flex: 1; }
+    .btn { height: 36px; padding: 0 18px; border-radius: var(--radius-md); font-size: 14px; font-weight: 500; font-family: var(--font); cursor: pointer; border: 0.5px solid var(--border-mid); background: transparent; color: var(--text-primary); white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; transition: background 0.15s, opacity 0.15s; }
+    .btn:hover { background: var(--bg-secondary); }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+    .btn-primary { background: var(--accent); color: var(--accent-fg); border-color: transparent; }
+    .btn-primary:hover { opacity: 0.88; background: var(--accent); }
+    .btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
+
+    /* Status */
+    .status { font-size: 13px; color: var(--text-secondary); min-height: 20px; margin-top: 0.75rem; display: flex; align-items: center; gap: 8px; }
+    .status.error { color: var(--danger); }
+    .spinner { width: 14px; height: 14px; border: 2px solid var(--border-mid); border-top-color: var(--text-primary); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+    .ai-spinner { width: 10px; height: 10px; border: 1.5px solid var(--border-mid); border-top-color: var(--text-secondary); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .progress-wrap { height: 3px; background: var(--bg-tertiary); border-radius: 99px; margin-top: 10px; overflow: hidden; display: none; }
+    .progress-bar { height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.4s ease; width: 0%; }
+
+    /* Results */
+    .results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+    .results-count { font-size: 14px; color: var(--text-secondary); }
+    .results-count strong { color: var(--text-primary); font-weight: 500; }
+    .table-wrap { border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 10px 14px; font-size: 11px; font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 0.5px solid var(--border); background: var(--bg-secondary); white-space: nowrap; }
+    td { padding: 11px 14px; border-bottom: 0.5px solid var(--border); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--bg-secondary); }
+
+    /* Name cell */
+    .name-cell { display: flex; align-items: center; gap: 8px; }
+    .avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--info-bg); color: var(--info-text); font-size: 11px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .name-text { font-weight: 500; font-size: 13px; }
+    .name-sub { font-size: 12px; color: var(--text-secondary); }
+
+    /* LinkedIn */
+    .linkedin-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 500; color: #ffffff; background: #0077b5; border: none; border-radius: 5px; padding: 4px 10px; cursor: pointer; text-decoration: none; transition: opacity 0.15s; }
+    .linkedin-btn:hover { opacity: 0.85; }
+
+    /* Misc */
+    #emailModal { display: none; }
+
+    /* Misc */
+    .muted { color: var(--text-muted); font-size: 12px; }
+    .hint { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+    #resultsSection { display: none; }
+
+    /* Usage bar */
+    .usage-row { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-secondary); margin-bottom: 1.5rem; }
+    .usage-bar-wrap { flex: 1; height: 4px; background: var(--bg-tertiary); border-radius: 99px; overflow: hidden; }
+    .usage-bar { height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.3s; }
+
+    /* History */
+    .history-list { display: flex; flex-direction: column; gap: 6px; }
+    .history-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-radius: var(--radius-md); background: var(--bg-secondary); font-size: 13px; cursor: pointer; border: 0.5px solid transparent; transition: border-color 0.15s; }
+    .history-item:hover { border-color: var(--border-mid); }
+    .history-firm { font-weight: 500; }
+    .history-meta { font-size: 12px; color: var(--text-muted); }
+  </style>
+  <script>window.__nativeFetch = window.fetch.bind(window);</script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">Shortlist</div>
+  <div class="topbar-right">
+    <span class="user-pill" id="userEmail">Loading...</span>
+    <button class="btn-signout" id="signoutBtn">Sign out</button>
+  </div>
+</div>
+
+<div class="main">
+  <h1 class="page-title">Alumni employment search</h1>
+  <p class="page-sub">Search where your alumni work — export results for reporting and analytics</p>
+
+  <!-- Search -->
+  <div class="card">
+    <div class="card-title">Search</div>
+    <div class="grid-2">
+      <div class="field">
+        <label for="school">Your school</label>
+        <input type="text" id="school" placeholder="e.g. Cornell University" autocomplete="off" />
+      </div>
+      <div class="field" id="firmField">
+        <label for="firmInput">Target firm</label>
+        <input type="text" id="firmInput" placeholder="Type to search firms..." autocomplete="off" />
+        <input type="hidden" id="firmValue" />
+        <div class="autocomplete-list" id="firmDropdown"></div>
+      </div>
+    </div>
+    <div class="search-row">
+      <div class="field">
+        <label for="role">Role / keyword <span style="text-transform:none;font-weight:400;letter-spacing:0">(optional)</span></label>
+        <input type="text" id="role" placeholder="e.g. Investment Banking Analyst, Quantitative Researcher" />
+      </div>
+      <div class="field" style="min-width:110px">
+        <label for="resultSize">Max results</label>
+        <select id="resultSize">
+          <option value="10">10</option>
+          <option value="25" selected>25</option>
+          <option value="50">50</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" id="searchBtn">Search</button>
+    </div>
+    <div class="status" id="status"></div>
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+  </div>
+
+  <!-- Search history -->
+  <div class="card" id="historyCard" style="display:none">
+    <div class="card-title">Recent searches</div>
+    <div class="history-list" id="historyList"></div>
+  </div>
+
+  <!-- Results -->
+  <div id="resultsSection">
+    <div class="results-header">
+      <div class="results-count" id="resultCount"></div>
+      <button class="btn" id="exportBtn">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <path d="M7 1v8M4 6l3 3 3-3M2 11h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Export CSV
+      </button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:25%">Name</th>
+            <th style="width:25%">Title</th>
+            <th style="width:20%">Location</th>
+            <th style="width:15%">LinkedIn</th>
+            <th style="width:15%">Grad Year</th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+window.addEventListener('DOMContentLoaded', function() {
+(function() {
+
+  var nativeFetch = window.__nativeFetch || window.fetch.bind(window);
+  var SUPABASE_URL  = 'https://mjmgwwhzovqnvedisaow.supabase.co';
+  var SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qbWd3d2h6b3ZxbnZlZGlzYW93Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MTQ4MjQsImV4cCI6MjA5NDA5MDgyNH0.IpscZzKQWvozWkJgwSiJYC5rBRBcMOnqnJohCgtohIw';
+  var BACKEND       = 'https://shortlist-backend-8hlg.onrender.com';
+
+  var sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  var currentResults  = [];
+  var activeIdx       = -1;
+  var currentUserId   = null;
+  var currentUserEmail = null;
+  var currentSchool   = '';
+
+  // ── Auth ──────────────────────────────────────────────────────────────────
+  sb.auth.getSession().then(function(res) {
+    var session = res.data.session;
+    if (!session) { window.location.href = 'index.html'; return; }
+    currentUserId    = session.user.id;
+    currentUserEmail = session.user.email;
+    document.getElementById('userEmail').textContent = currentUserEmail;
+    loadHistory();
+  });
+
+  document.getElementById('signoutBtn').addEventListener('click', function() {
+    sb.auth.signOut().then(function() { window.location.href = 'index.html'; });
+  });
+
+  // ── Search history (localStorage) ────────────────────────────────────────
+  function getHistoryKey() { return 'sl_history_' + currentUserId; }
+
+  function saveToHistory(school, firm, role, count) {
+    var key  = getHistoryKey();
+    var list = JSON.parse(localStorage.getItem(key) || '[]');
+    list.unshift({ school: school, firm: firm, role: role, count: count, date: new Date().toLocaleDateString() });
+    if (list.length > 10) list = list.slice(0, 10);
+    localStorage.setItem(key, JSON.stringify(list));
+    renderHistory(list);
+  }
+
+  function loadHistory() {
+    var list = JSON.parse(localStorage.getItem(getHistoryKey()) || '[]');
+    renderHistory(list);
+  }
+
+  function renderHistory(list) {
+    var card = document.getElementById('historyCard');
+    var el   = document.getElementById('historyList');
+    if (!list.length) { card.style.display = 'none'; return; }
+    card.style.display = 'block';
+    el.innerHTML = '';
+    list.forEach(function(h) {
+      var div = document.createElement('div');
+      div.className = 'history-item';
+      div.innerHTML =
+        '<div><span class="history-firm">' + esc(h.firm) + '</span> &larr; ' + esc(h.school) + (h.role ? ' &middot; ' + esc(h.role) : '') + '</div>' +
+        '<div class="history-meta">' + h.count + ' results &middot; ' + h.date + '</div>';
+      div.addEventListener('click', function() {
+        document.getElementById('school').value   = h.school;
+        document.getElementById('firmInput').value = h.firm;
+        document.getElementById('firmValue').value = h.firm;
+        document.getElementById('role').value      = h.role || '';
+        runSearch();
+      });
+      el.appendChild(div);
+    });
+  }
+
+  // ── Firms autocomplete ────────────────────────────────────────────────────
+  var FIRMS = [
+    'Goldman Sachs','Morgan Stanley','JPMorgan Chase','Bank of America','Citigroup',
+    'Barclays','Deutsche Bank','Credit Suisse','UBS','HSBC','BNP Paribas',
+    'Wells Fargo','RBC Capital Markets','Nomura','Mizuho','MUFG',
+    'Evercore','Lazard','Centerview Partners','PJT Partners','Moelis & Company',
+    'Rothschild & Co','Houlihan Lokey','Jefferies','Guggenheim Partners',
+    'Perella Weinberg Partners','Allen & Company','Greenhill',
+    'Citadel','Citadel Securities','Two Sigma','D.E. Shaw','Jane Street',
+    'Renaissance Technologies','Virtu Financial','Jump Trading','Hudson River Trading',
+    'Optiver','IMC Trading','SIG Susquehanna','Akuna Capital','DRW','Five Rings',
+    'Tower Research Capital','Millennium Management','Point72','Bridgewater Associates',
+    'AQR Capital Management','Man Group','Winton Group',
+    'Blackstone','KKR','Apollo Global Management','Carlyle Group','TPG Capital',
+    'Warburg Pincus','Bain Capital','General Atlantic','CVC Capital Partners',
+    'Advent International','Silver Lake','Vista Equity Partners','Thoma Bravo',
+    'Francisco Partners','Andreessen Horowitz','Sequoia Capital','Accel',
+    'BlackRock','Vanguard','Fidelity Investments','T. Rowe Price','PIMCO',
+    'Wellington Management','Balyasny Asset Management','Coatue Management',
+    'Tiger Global Management','Third Point','Elliott Management',
+    'McKinsey & Company','Boston Consulting Group','Bain & Company',
+    'Deloitte','PwC','EY','KPMG','Accenture'
+  ].sort();
+
+  function fuzzyScore(q, t) {
+    var ql = q.toLowerCase(), tl = t.toLowerCase();
+    if (tl.startsWith(ql)) return 3;
+    if (tl.includes(ql))   return 2;
+    var qi = 0;
+    for (var i = 0; i < tl.length && qi < ql.length; i++) if (tl[i] === ql[qi]) qi++;
+    return qi === ql.length ? 1 : 0;
+  }
+
+  function getFirmMatches(q) {
+    if (!q) return FIRMS.slice(0, 8);
+    return FIRMS.map(function(f) { return { f: f, s: fuzzyScore(q, f) }; })
+      .filter(function(x) { return x.s > 0; })
+      .sort(function(a, b) { return b.s - a.s; })
+      .slice(0, 8).map(function(x) { return x.f; });
+  }
+
+  var firmInput    = document.getElementById('firmInput');
+  var firmValue    = document.getElementById('firmValue');
+  var firmDropdown = document.getElementById('firmDropdown');
+  var firmField    = document.getElementById('firmField');
+
+  firmInput.addEventListener('input',  function() { firmValue.value = ''; renderDropdown(getFirmMatches(firmInput.value), firmInput.value); });
+  firmInput.addEventListener('focus',  function() { renderDropdown(getFirmMatches(firmInput.value), firmInput.value); });
+  firmInput.addEventListener('keydown', function(e) {
+    var items = firmDropdown.querySelectorAll('.autocomplete-item');
+    if (e.key === 'ArrowDown') { e.preventDefault(); activeIdx = Math.min(activeIdx+1, items.length-1); items.forEach(function(el,i){el.classList.toggle('ac-active',i===activeIdx);}); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); activeIdx = Math.max(activeIdx-1,-1); items.forEach(function(el,i){el.classList.toggle('ac-active',i===activeIdx);}); }
+    else if (e.key === 'Enter') { if (activeIdx>=0&&items[activeIdx]){e.preventDefault();selectFirm(items[activeIdx].textContent);}else{firmDropdown.style.display='none';runSearch();} }
+    else if (e.key === 'Escape') firmDropdown.style.display = 'none';
+  });
+  document.addEventListener('click', function(e) { if (!firmField.contains(e.target)) firmDropdown.style.display='none'; });
+
+  function renderDropdown(matches, query) {
+    if (!matches.length) { firmDropdown.style.display='none'; return; }
+    activeIdx = -1; firmDropdown.innerHTML = '';
+    matches.forEach(function(firm) {
+      var div = document.createElement('div');
+      div.className = 'autocomplete-item';
+      var q = query.toLowerCase(), pos = firm.toLowerCase().indexOf(q);
+      if (pos >= 0 && q.length > 0) {
+        div.innerHTML = esc(firm.slice(0,pos)) + '<span class="autocomplete-match">'+esc(firm.slice(pos,pos+q.length))+'</span>' + esc(firm.slice(pos+q.length));
+      } else { div.textContent = firm; }
+      div.addEventListener('mousedown', function(e) { e.preventDefault(); selectFirm(firm); });
+      firmDropdown.appendChild(div);
+    });
+    firmDropdown.style.display = 'block';
+  }
+
+  function selectFirm(firm) { firmInput.value=firm; firmValue.value=firm; firmDropdown.style.display='none'; activeIdx=-1; }
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+  function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function setStatus(msg,isError,isHtml){var el=document.getElementById('status');el.className='status'+(isError?' error':'');if(isHtml)el.innerHTML=msg;else el.textContent=msg;}
+  function setProgress(pct){var w=document.getElementById('progressWrap'),b=document.getElementById('progressBar');if(pct<=0){w.style.display='none';return;}w.style.display='block';b.style.width=Math.min(100,pct)+'%';}
+  function initials(f,l){return((f?f[0]:'')+(l?l[0]:'')).toUpperCase()||'?';}
+  function getLocation(p){var c=p.location_locality||p.location_metro||'',s=p.location_region||'',co=p.location_country||'';if(c&&s)return c+', '+s;return c||s||co||'—';}
+  function getGradYear(p){
+    if(!p.education||!p.education.length) return '—';
+    var years=p.education.map(function(e){return e.end_date?parseInt(e.end_date):null;}).filter(Boolean);
+    return years.length?Math.max.apply(null,years).toString():'—';
+  }
+  function linkedinSlug(url){try{var u=new URL(url.startsWith('http')?url:'https://'+url);var parts=u.pathname.split('/').filter(Boolean);var idx=parts.indexOf('in');if(idx>=0&&parts[idx+1])return parts[idx+1];}catch(e){}return url.replace(/.*linkedin\.com\/in\//,'').replace(/\//,'');}
+
+  // ── Search ────────────────────────────────────────────────────────────────
+  document.getElementById('searchBtn').addEventListener('click', runSearch);
+  document.getElementById('exportBtn').addEventListener('click', exportCSV);
+
+  function runSearch() {
+    var school  = document.getElementById('school').value.trim();
+    var firmRaw = firmInput.value.trim();
+    var firm    = firmValue.value.trim() || firmRaw;
+    var role    = document.getElementById('role').value.trim();
+    var size    = parseInt(document.getElementById('resultSize').value);
+    var btn     = document.getElementById('searchBtn');
+
+    if (!school || !firm) { setStatus('Please enter both a school and a firm.', true); return; }
+
+    currentSchool = school;
+    btn.disabled  = true;
+    currentResults = [];
+    document.getElementById('resultsSection').style.display = 'none';
+    setStatus('<span class="spinner"></span>Searching...', false, true);
+    setProgress(10);
+
+    nativeFetch(BACKEND + '/api/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ school: school, firm: firm, role: role, size: size })
+    })
+    .then(function(r) { return r.json().then(function(d){return{ok:r.ok,data:d};}); })
+    .then(function(res) {
+      if (!res.ok) { setStatus(res.data.error||'Search error.', true); setProgress(0); btn.disabled=false; return; }
+
+      var people = res.data.data  || [];
+      var total  = res.data.total || people.length;
+
+      if (!people.length) { setStatus('No results. Try the full school name e.g. "Cornell University".', false); setProgress(0); btn.disabled=false; return; }
+
+      currentResults = people.map(function(p){return Object.assign({},p);});
+      renderTable(school, firm, total);
+      document.getElementById('resultsSection').style.display = 'block';
+      setProgress(100);
+      setTimeout(function(){setProgress(0);},600);
+
+      var extra = total > size ? ' PDL has '+total.toLocaleString()+' total — increase max results to see more.' : '';
+      var cacheNote = res.data.fromCache ? ' (from cache)' : ' (live PDL query)';
+      setStatus('Done — '+people.length+' results.'+extra+cacheNote);
+      btn.disabled = false;
+    })
+    .catch(function(err){
+      setStatus('Cannot reach the server. Please try again or contact support.', true);
+      setProgress(0); btn.disabled=false;
+    });
+  }
+
+  function renderTable(school, firm, total) {
+    var body=document.getElementById('resultsBody'), count=document.getElementById('resultCount'), n=currentResults.length;
+    count.innerHTML='<strong>'+n+'</strong> result'+(n!==1?'s':'')+(total>n?' of <strong>'+total.toLocaleString()+'</strong> total':'')+' &mdash; '+esc(school)+' &rarr; '+esc(firm);
+    body.innerHTML='';
+    currentResults.forEach(function(p,i){
+      var name=([p.first_name,p.last_name].filter(Boolean).join(' '))||'Unknown';
+      var title=p.job_title||'—', company=p.job_company_name||firm, loc=getLocation(p), li=p.linkedin_url||null, init=initials(p.first_name,p.last_name);
+      var gradYear = getGradYear(p);
+      var tr=document.createElement('tr');
+      tr.innerHTML=
+        '<td><div class="name-cell"><div class="avatar">'+esc(init)+'</div><div><div class="name-text">'+esc(name)+'</div><div class="name-sub">'+esc(company)+'</div></div></div></td>'+
+        '<td style="font-size:13px;color:var(--text-secondary)">'+esc(title)+'</td>'+
+        '<td style="font-size:13px;color:var(--text-secondary)">'+esc(loc)+'</td>'+
+        '<td>'+(li?'<a class="linkedin-btn" href="https://www.linkedin.com/in/'+esc(linkedinSlug(li))+'" target="_blank" rel="noopener noreferrer"><svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854zm4.943 12.248V6.169H2.542v7.225zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248S2.4 3.226 2.4 3.934c0 .694.521 1.248 1.327 1.248zm4.882 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016l.016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225z"/></svg>LinkedIn</a>':'<span class="muted">—</span>')+'</td>'+
+        '<td style="font-size:13px;color:var(--text-secondary)">'+esc(gradYear)+'</td>';
+      body.appendChild(tr);
+    });
+  }
+
+  // ── Export ────────────────────────────────────────────────────────────────
+  function exportCSV() {
+    if (!currentResults.length) return;
+    var headers=['Name','First Name','Last Name','Title','Company','Location','LinkedIn','Grad Year'];
+    var rows=currentResults.map(function(p){return[
+      [p.first_name,p.last_name].filter(Boolean).join(' '),
+      p.first_name||'',p.last_name||'',
+      p.job_title||'',p.job_company_name||'',
+      getLocation(p),p.linkedin_url||'',getGradYear(p)
+    ];});
+    var csv=[headers].concat(rows).map(function(r){return r.map(function(c){return'"'+String(c).replace(/"/g,'""')+'"';}).join(',');}).join('\n');
+    var blob=new Blob([csv],{type:'text/csv'}), url=URL.createObjectURL(blob), a=document.createElement('a');
+    a.href=url; a.download='shortlist_results.csv'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  }
+
+})();
+}); // end DOMContentLoaded
+</script>
+</body>
+</html>
