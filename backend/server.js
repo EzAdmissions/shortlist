@@ -260,6 +260,127 @@ app.post('/api/seed-preview', async (req, res) => {
   }
 });
 
+// ── Top finance firms to seed ─────────────────────────────────────────────────
+const TOP_FIRMS = [
+  'Goldman Sachs',
+  'Morgan Stanley',
+  'JPMorgan Chase',
+  'Bank of America',
+  'Blackstone',
+  'KKR',
+  'Apollo Global Management',
+  'Carlyle Group',
+  'Citadel',
+  'Two Sigma',
+  'D.E. Shaw',
+  'Jane Street',
+  'McKinsey & Company',
+  'Boston Consulting Group',
+  'Bain & Company',
+  'Evercore',
+  'Lazard',
+  'Centerview Partners',
+  'PJT Partners',
+  'Moelis & Company'
+];
+
+// ── Seed firms endpoint ───────────────────────────────────────────────────────
+//
+// Loops through TOP_FIRMS, skips any already cached, fetches from PDL and
+// stores in Supabase. Costs 1 credit per firm not already cached.
+// Returns a full log so you can see exactly what happened.
+//
+// POST /api/seed-firms
+// Optional body: { "dry_run": true } — shows what would be fetched without
+// actually hitting PDL (0 credits used).
+//
+app.post('/api/seed-firms', async (req, res) => {
+  const { dry_run = false } = req.body || {};
+
+  const log     = [];
+  let credits   = 0;
+  let cached    = 0;
+  let errors    = 0;
+
+  for (const firm of TOP_FIRMS) {
+    // Check if already cached and fresh
+    const existing = await supabaseGet('firm_cache', 'firm_name', firm);
+    if (existing && new Date(existing.refresh_after) > new Date()) {
+      log.push({ firm, status: 'skipped', reason: 'already cached', profiles: existing.profiles.length });
+      cached++;
+      continue;
+    }
+
+    if (dry_run) {
+      log.push({ firm, status: 'would_fetch', reason: 'not cached' });
+      credits++;
+      continue;
+    }
+
+    // Fetch from PDL — costs 1 credit
+    try {
+      const response = await fetch('https://api.peopledatalabs.com/v5/person/search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Api-Key': PDL_KEY
+        },
+        body: JSON.stringify({
+          query: {
+            bool: {
+              must: [{ term: { 'job_company_name': firm } }]
+            }
+          },
+          size: 100,
+          pretty: true
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        log.push({ firm, status: 'error', reason: data?.error?.message || 'PDL error' });
+        errors++;
+        continue;
+      }
+
+      const profiles = data.data || [];
+      const total    = data.total || 0;
+
+      // Store in Supabase
+      await supabaseUpsert('firm_cache', {
+        firm_name:     firm,
+        profiles:      profiles,
+        total_found:   total,
+        cached_at:     new Date().toISOString(),
+        refresh_after: new Date(Date.now() + CACHE_TTL_MS).toISOString()
+      });
+
+      log.push({ firm, status: 'seeded', profiles: profiles.length, total_in_pdl: total });
+      credits++;
+
+      // Small delay between requests to be respectful to PDL rate limits
+      await new Promise(r => setTimeout(r, 500));
+
+    } catch (err) {
+      log.push({ firm, status: 'error', reason: err.message });
+      errors++;
+    }
+  }
+
+  res.json({
+    summary: {
+      total_firms:   TOP_FIRMS.length,
+      seeded:        credits,
+      already_cached: cached,
+      errors,
+      credits_used:  dry_run ? 0 : credits,
+      dry_run
+    },
+    log
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`Shortlist backend running on port ${PORT}`);
 });
