@@ -145,16 +145,16 @@
 </div>
 
 <div class="main">
-  <h1 class="page-title">Alumni employment search</h1>
-  <p class="page-sub">Search where your alumni work — export results for reporting and analytics</p>
+  <h1 class="page-title">Cornell alumni search</h1>
+  <p class="page-sub">Search where Cornell alumni work across top finance firms</p>
 
   <!-- Search -->
   <div class="card">
     <div class="card-title">Search</div>
     <div class="grid-2">
       <div class="field">
-        <label for="school">Your school</label>
-        <input type="text" id="school" placeholder="e.g. Cornell University" autocomplete="off" />
+        <label for="school">School</label>
+        <input type="text" id="school" value="Cornell University" readonly style="color:var(--text-secondary);cursor:default" />
       </div>
       <div class="field" id="firmField">
         <label for="firmInput">Target firm</label>
@@ -288,29 +288,13 @@ window.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // ── Firms autocomplete ────────────────────────────────────────────────────
+  // ── Firms autocomplete (only cached firms) ───────────────────────────────
   var FIRMS = [
-    'Goldman Sachs','Morgan Stanley','JPMorgan Chase','Bank of America','Citigroup',
-    'Barclays','Deutsche Bank','Credit Suisse','UBS','HSBC','BNP Paribas',
-    'Wells Fargo','RBC Capital Markets','Nomura','Mizuho','MUFG',
-    'Evercore','Lazard','Centerview Partners','PJT Partners','Moelis & Company',
-    'Rothschild & Co','Houlihan Lokey','Jefferies','Guggenheim Partners',
-    'Perella Weinberg Partners','Allen & Company','Greenhill',
-    'Citadel','Citadel Securities','Two Sigma','D.E. Shaw','Jane Street',
-    'Renaissance Technologies','Virtu Financial','Jump Trading','Hudson River Trading',
-    'Optiver','IMC Trading','SIG Susquehanna','Akuna Capital','DRW','Five Rings',
-    'Tower Research Capital','Millennium Management','Point72','Bridgewater Associates',
-    'AQR Capital Management','Man Group','Winton Group',
-    'Blackstone','KKR','Apollo Global Management','Carlyle Group','TPG Capital',
-    'Warburg Pincus','Bain Capital','General Atlantic','CVC Capital Partners',
-    'Advent International','Silver Lake','Vista Equity Partners','Thoma Bravo',
-    'Francisco Partners','Andreessen Horowitz','Sequoia Capital','Accel',
-    'BlackRock','Vanguard','Fidelity Investments','T. Rowe Price','PIMCO',
-    'Wellington Management','Balyasny Asset Management','Coatue Management',
-    'Tiger Global Management','Third Point','Elliott Management',
-    'McKinsey & Company','Boston Consulting Group','Bain & Company',
-    'Deloitte','PwC','EY','KPMG','Accenture'
-  ].sort();
+    'Bank of America',
+    'Blackstone',
+    'Goldman Sachs',
+    'Morgan Stanley'
+  ];
 
   function fuzzyScore(q, t) {
     var ql = q.toLowerCase(), tl = t.toLowerCase();
