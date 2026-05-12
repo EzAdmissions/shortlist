@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shortlist — Dashboard</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #ffffff; --bg-secondary: #f9f9f8; --bg-tertiary: #f2f1ee;
+      --text-primary: #1a1a18; --text-secondary: #6b6b67; --text-muted: #9b9b96;
+      --border: rgba(0,0,0,0.12); --border-mid: rgba(0,0,0,0.22);
+      --accent: #1a1a18; --accent-fg: #ffffff;
+      --info-bg: #e6f1fb; --info-text: #185fa5;
+      --success-bg: #eaf3de; --success-text: #3b6d11;
+      --danger: #c0392b; --danger-bg: #fdf2f2;
+      --radius-md: 8px; --radius-lg: 12px;
+      --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'SF Mono', 'Fira Code', monospace;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1e1e1c; --bg-secondary: #252523; --bg-tertiary: #2c2c2a;
+        --text-primary: #f0ede8; --text-secondary: #9b9b96; --text-muted: #6b6b67;
+        --border: rgba(255,255,255,0.1); --border-mid: rgba(255,255,255,0.2);
+        --accent: #f0ede8; --accent-fg: #1a1a18;
+        --info-bg: #0c2d4a; --info-text: #85b7eb;
+        --success-bg: #173404; --success-text: #c0dd97;
+        --danger: #e57373; --danger-bg: #2a1010;
+      }
+    }
+    body { font-family: var(--font); background: var(--bg); color: var(--text-primary); min-height: 100vh; }
+
+    /* Topbar */
+    .topbar { border-bottom: 0.5px solid var(--border); padding: 0 2rem; height: 52px; display: flex; align-items: center; justify-content: space-between; background: var(--bg); position: sticky; top: 0; z-index: 100; }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar-brand { font-size: 16px; font-weight: 600; letter-spacing: -0.3px; }
+    .topbar-nav a { font-size: 13px; color: var(--text-secondary); text-decoration: none; padding: 4px 8px; border-radius: var(--radius-md); }
+    .topbar-nav a:hover { background: var(--bg-secondary); color: var(--text-primary); }
+    .topbar-nav a.active { color: var(--text-primary); font-weight: 500; }
+    .topbar-right { display: flex; align-items: center; gap: 12px; }
+    .user-pill { font-size: 13px; color: var(--text-secondary); background: var(--bg-secondary); border: 0.5px solid var(--border); border-radius: 99px; padding: 4px 12px; }
+    .btn-signout { font-size: 13px; color: var(--text-secondary); background: transparent; border: none; cursor: pointer; padding: 4px 8px; border-radius: var(--radius-md); font-family: var(--font); }
+    .btn-signout:hover { background: var(--bg-secondary); color: var(--text-primary); }
+
+    /* Layout */
+    .main { max-width: 1060px; margin: 0 auto; padding: 2.5rem 2rem 4rem; }
+    .page-title { font-size: 22px; font-weight: 500; margin-bottom: 4px; }
+    .page-sub { font-size: 14px; color: var(--text-secondary); margin-bottom: 2rem; }
+
+    /* Cards */
+    .card { border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1.5rem; }
+    .card-title { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 1rem; }
+
+    /* Stats grid */
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 1.5rem; }
+    @media (max-width: 620px) { .stats-grid { grid-template-columns: 1fr 1fr; } }
+    .stat-card { border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; }
+    .stat-value { font-size: 28px; font-weight: 500; color: var(--text-primary); line-height: 1; margin-bottom: 4px; font-family: var(--font-mono); }
+    .stat-label { font-size: 12px; color: var(--text-secondary); }
+
+    /* Employer grid */
+    .employer-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+    .employer-card {
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.25rem;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      background: var(--bg-secondary);
+    }
+    .employer-card:hover { border-color: var(--border-mid); background: var(--bg-tertiary); }
+    .employer-card.active { border-color: var(--accent); background: var(--bg-secondary); }
+    .employer-name { font-size: 13px; font-weight: 500; margin-bottom: 6px; }
+    .employer-count { font-size: 22px; font-weight: 500; font-family: var(--font-mono); line-height: 1; margin-bottom: 2px; }
+    .employer-sub { font-size: 11px; color: var(--text-muted); }
+
+    /* Filters */
+    .filter-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 1rem; }
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    label { font-size: 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 500; }
+    input, select { height: 36px; border: 0.5px solid var(--border-mid); border-radius: var(--radius-md); background: var(--bg-secondary); color: var(--text-primary); font-size: 14px; padding: 0 12px; font-family: var(--font); outline: none; width: 100%; transition: border-color 0.15s; }
+    input:focus, select:focus { border-color: var(--accent); }
+
+    /* Buttons */
+    .btn { height: 36px; padding: 0 18px; border-radius: var(--radius-md); font-size: 14px; font-weight: 500; font-family: var(--font); cursor: pointer; border: 0.5px solid var(--border-mid); background: transparent; color: var(--text-primary); white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; transition: background 0.15s, opacity 0.15s; }
+    .btn:hover { background: var(--bg-secondary); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-primary { background: var(--accent); color: var(--accent-fg); border-color: transparent; }
+    .btn-primary:hover { opacity: 0.88; background: var(--accent); }
+
+    /* Status */
+    .status { font-size: 13px; color: var(--text-secondary); min-height: 20px; display: flex; align-items: center; gap: 8px; }
+    .status.error { color: var(--danger); }
+    .spinner { width: 14px; height: 14px; border: 2px solid var(--border-mid); border-top-color: var(--text-primary); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Results */
+    .results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+    .results-count { font-size: 14px; color: var(--text-secondary); }
+    .results-count strong { color: var(--text-primary); font-weight: 500; }
+    .table-wrap { border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 10px 14px; font-size: 11px; font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 0.5px solid var(--border); background: var(--bg-secondary); white-space: nowrap; }
+    td { padding: 11px 14px; border-bottom: 0.5px solid var(--border); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--bg-secondary); }
+
+    /* Name cell */
+    .name-cell { display: flex; align-items: center; gap: 8px; }
+    .avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--info-bg); color: var(--info-text); font-size: 11px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .name-text { font-weight: 500; font-size: 13px; }
+    .year-badge { font-size: 12px; color: var(--text-secondary); font-family: var(--font-mono); }
+
+    /* LinkedIn */
+    .linkedin-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 500; color: #ffffff; background: #0077b5; border: none; border-radius: 5px; padding: 4px 10px; cursor: pointer; text-decoration: none; transition: opacity 0.15s; }
+    .linkedin-btn:hover { opacity: 0.85; }
+
+    /* Misc */
+    .muted { color: var(--text-muted); font-size: 12px; }
+    .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text-muted); font-size: 14px; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-brand">Shortlist</div>
+    <nav class="topbar-nav">
+      <a href="app.html">Search</a>
+      <a href="dashboard.html" class="active">Dashboard</a>
+    </nav>
+  </div>
+  <div class="topbar-right">
+    <span class="user-pill" id="userEmail">Loading...</span>
+    <button class="btn-signout" id="signoutBtn">Sign out</button>
+  </div>
+</div>
+
+<div class="main">
+  <h1 class="page-title">Alumni employment dashboard</h1>
+  <p class="page-sub">Cornell University — real-time data from public professional profiles</p>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-value" id="statTotal">—</div>
+      <div class="stat-label">Cornell alumni tracked</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="statFirms">—</div>
+      <div class="stat-label">Firms covered</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="statTop">—</div>
+      <div class="stat-label">Top employer (alumni)</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="statYears">—</div>
+      <div class="stat-label">Grad years spanned</div>
+    </div>
+  </div>
+
+  <!-- Top employers -->
+  <div class="card">
+    <div class="card-title" style="display:flex;align-items:center;justify-content:space-between">
+      <span>Top employers — click to filter</span>
+      <span class="status" id="loadStatus"><span class="spinner"></span>Loading...</span>
+    </div>
+    <div class="employer-grid" id="employerGrid"></div>
+  </div>
+
+  <!-- Results -->
+  <div class="card">
+    <div class="card-title">Browse alumni</div>
+
+    <div class="filter-row">
+      <div class="field">
+        <label>Firm</label>
+        <input id="filterFirm" placeholder="All firms" readonly style="cursor:pointer;min-width:160px" />
+      </div>
+      <div class="field">
+        <label>Grad year from</label>
+        <input id="filterYearMin" type="number" placeholder="e.g. 2015" style="min-width:110px" />
+      </div>
+      <div class="field">
+        <label>Grad year to</label>
+        <input id="filterYearMax" type="number" placeholder="e.g. 2023" style="min-width:110px" />
+      </div>
+      <div class="field">
+        <label>Title keyword</label>
+        <input id="filterTitle" placeholder="e.g. Analyst" style="min-width:140px" />
+      </div>
+      <button class="btn" id="clearBtn" style="align-self:flex-end">Clear</button>
+      <button class="btn btn-primary" id="exportBtn" style="align-self:flex-end" disabled>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <path d="M7 1v8M4 6l3 3 3-3M2 11h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Export CSV
+      </button>
+    </div>
+
+    <div class="results-header">
+      <div class="results-count" id="resultsCount"></div>
+    </div>
+
+    <div class="table-wrap" id="tableWrap" style="display:none">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:22%">Name</th>
+            <th style="width:22%">Title</th>
+            <th style="width:18%">Firm</th>
+            <th style="width:10%">Grad year</th>
+            <th style="width:16%">Location</th>
+            <th style="width:12%">LinkedIn</th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody"></tbody>
+      </table>
+    </div>
+
+    <div class="empty-state" id="emptyState" style="display:none">No results — try adjusting your filters.</div>
+  </div>
+
+</div>
+
+<script>
+(function() {
+  var SUPABASE_URL = 'https://mjmgwwhzovqnvedisaow.supabase.co';
+  var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qbWd3d2h6b3ZxbnZlZGlzYW93Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MTQ4MjQsImV4cCI6MjA5NDA5MDgyNH0.IpscZzKQWvozWkJgwSiJYC5rBRBcMOnqnJohCgtohIw';
+
+  var sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // Auth
+  sb.auth.getSession().then(function(res) {
+    if (!res.data.session) { window.location.href = 'index.html'; return; }
+    document.getElementById('userEmail').textContent = res.data.session.user.email;
+    loadDashboard();
+  });
+
+  document.getElementById('signoutBtn').addEventListener('click', function() {
+    sb.auth.signOut().then(function() { window.location.href = 'index.html'; });
+  });
+
+  // ── State ──────────────────────────────────────────────────────────────────
+  var allAlumni  = [];
+  var activeFirm = null;
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  function esc(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function getGradYear(p) {
+    if (!p.education || !p.education.length) return null;
+    var cornellYears = p.education
+      .filter(function(e) { return e.school && e.school.name && e.school.name.toLowerCase().includes('cornell'); })
+      .map(function(e) { return e.end_date ? parseInt(e.end_date) : null; })
+      .filter(Boolean);
+    if (cornellYears.length) return Math.max.apply(null, cornellYears);
+    var allYears = p.education.map(function(e) { return e.end_date ? parseInt(e.end_date) : null; }).filter(Boolean);
+    return allYears.length ? Math.max.apply(null, allYears) : null;
+  }
+
+  function getLocation(p) {
+    var c = p.location_locality || p.location_metro || '';
+    var s = p.location_region || '';
+    if (c && s) return c + ', ' + s;
+    return c || s || p.location_country || '';
+  }
+
+  function initials(p) {
+    return ((p.first_name ? p.first_name[0] : '') + (p.last_name ? p.last_name[0] : '')).toUpperCase() || '?';
+  }
+
+  function linkedinSlug(url) {
+    if (!url) return null;
+    try {
+      var u = new URL(url.startsWith('http') ? url : 'https://' + url);
+      var parts = u.pathname.split('/').filter(Boolean);
+      var idx = parts.indexOf('in');
+      if (idx >= 0 && parts[idx+1]) return parts[idx+1];
+    } catch(e) {}
+    return url.replace(/.*linkedin\.com\/in\//,'').replace(/\//,'');
+  }
+
+  function setStatus(msg, isHtml) {
+    var el = document.getElementById('loadStatus');
+    el.className = 'status';
+    if (isHtml) el.innerHTML = msg; else el.textContent = msg;
+  }
+
+  // ── Load ───────────────────────────────────────────────────────────────────
+  function loadDashboard() {
+    fetch(SUPABASE_URL + '/rest/v1/firm_cache?select=firm_name,profiles,total_found&order=firm_name.asc', {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(rows) {
+      if (!rows || !rows.length) { setStatus('No cached firms found.'); return; }
+
+      // Build Cornell alumni array
+      allAlumni = [];
+      rows.forEach(function(row) {
+        (row.profiles || []).forEach(function(p) {
+          var isCornell = p.education && p.education.some(function(e) {
+            return e.school && e.school.name && e.school.name.toLowerCase().includes('cornell');
+          });
+          if (isCornell) { p._firm = row.firm_name; allAlumni.push(p); }
+        });
+      });
+
+      renderStats(rows);
+      renderEmployerGrid(rows);
+      renderTable(allAlumni);
+      setStatus(rows.length + ' firm' + (rows.length !== 1 ? 's' : '') + ' loaded · refreshes weekly');
+    })
+    .catch(function() {
+      setStatus('Error loading data.');
+      document.getElementById('loadStatus').className = 'status error';
+    });
+  }
+
+  // ── Stats ──────────────────────────────────────────────────────────────────
+  function renderStats(rows) {
+    var firmCounts = {};
+    var years = [];
+    allAlumni.forEach(function(p) {
+      firmCounts[p._firm] = (firmCounts[p._firm] || 0) + 1;
+      var y = getGradYear(p); if (y) years.push(y);
+    });
+    var counts   = Object.values(firmCounts);
+    var topCount = counts.length ? Math.max.apply(null, counts) : 0;
+    var minYear  = years.length ? Math.min.apply(null, years) : '—';
+    var maxYear  = years.length ? Math.max.apply(null, years) : '—';
+
+    document.getElementById('statTotal').textContent = allAlumni.length;
+    document.getElementById('statFirms').textContent = rows.length;
+    document.getElementById('statTop').textContent   = topCount;
+    document.getElementById('statYears').textContent = years.length ? (maxYear - minYear) : '—';
+  }
+
+  // ── Employer grid ──────────────────────────────────────────────────────────
+  function renderEmployerGrid(rows) {
+    var grid = document.getElementById('employerGrid');
+    grid.innerHTML = '';
+    var firmCounts = {};
+    allAlumni.forEach(function(p) { firmCounts[p._firm] = (firmCounts[p._firm] || 0) + 1; });
+
+    // Sort by count desc
+    var sorted = rows.slice().sort(function(a,b) {
+      return (firmCounts[b.firm_name] || 0) - (firmCounts[a.firm_name] || 0);
+    });
+
+    sorted.forEach(function(row) {
+      var count = firmCounts[row.firm_name] || 0;
+      var card  = document.createElement('div');
+      card.className = 'employer-card';
+      card.dataset.firm = row.firm_name;
+      card.innerHTML =
+        '<div class="employer-name">' + esc(row.firm_name) + '</div>' +
+        '<div class="employer-count">' + count + '</div>' +
+        '<div class="employer-sub">Cornell alumni</div>';
+      card.addEventListener('click', function() {
+        if (activeFirm === row.firm_name) {
+          activeFirm = null;
+          document.getElementById('filterFirm').value = '';
+          card.classList.remove('active');
+        } else {
+          activeFirm = row.firm_name;
+          document.getElementById('filterFirm').value = row.firm_name;
+          document.querySelectorAll('.employer-card').forEach(function(c) { c.classList.remove('active'); });
+          card.classList.add('active');
+        }
+        applyFilters();
+      });
+      grid.appendChild(card);
+    });
+  }
+
+  // ── Filters ────────────────────────────────────────────────────────────────
+  ['filterYearMin','filterYearMax','filterTitle'].forEach(function(id) {
+    document.getElementById(id).addEventListener('input', applyFilters);
+  });
+
+  document.getElementById('clearBtn').addEventListener('click', function() {
+    activeFirm = null;
+    document.getElementById('filterFirm').value = '';
+    document.getElementById('filterYearMin').value = '';
+    document.getElementById('filterYearMax').value = '';
+    document.getElementById('filterTitle').value = '';
+    document.querySelectorAll('.employer-card').forEach(function(c) { c.classList.remove('active'); });
+    applyFilters();
+  });
+
+  function applyFilters() {
+    var yearMin = parseInt(document.getElementById('filterYearMin').value) || null;
+    var yearMax = parseInt(document.getElementById('filterYearMax').value) || null;
+    var title   = document.getElementById('filterTitle').value.trim().toLowerCase();
+
+    var filtered = allAlumni.filter(function(p) {
+      if (activeFirm && p._firm !== activeFirm) return false;
+      var y = getGradYear(p);
+      if (yearMin && (!y || y < yearMin)) return false;
+      if (yearMax && (!y || y > yearMax)) return false;
+      if (title && !(p.job_title || '').toLowerCase().includes(title)) return false;
+      return true;
+    });
+
+    renderTable(filtered);
+  }
+
+  // ── Table ──────────────────────────────────────────────────────────────────
+  function renderTable(people) {
+    var body      = document.getElementById('resultsBody');
+    var wrap      = document.getElementById('tableWrap');
+    var empty     = document.getElementById('emptyState');
+    var countEl   = document.getElementById('resultsCount');
+    var exportBtn = document.getElementById('exportBtn');
+
+    body.innerHTML = '';
+    window._currentResults = people;
+
+    if (!people.length) {
+      wrap.style.display  = 'none';
+      empty.style.display = 'block';
+      countEl.innerHTML   = '';
+      exportBtn.disabled  = true;
+      return;
+    }
+
+    wrap.style.display  = 'block';
+    empty.style.display = 'none';
+    exportBtn.disabled  = false;
+
+    var shown = Math.min(people.length, 200);
+    countEl.innerHTML = '<strong>' + shown + '</strong> result' + (shown !== 1 ? 's' : '') +
+      (people.length > 200 ? ' of <strong>' + people.length + '</strong> total &mdash; export for full list' : '');
+
+    people.slice(0, 200).forEach(function(p) {
+      var name     = [p.first_name, p.last_name].filter(Boolean).join(' ') || 'Unknown';
+      var title    = p.job_title || '—';
+      var firm     = p._firm || '—';
+      var loc      = getLocation(p) || '—';
+      var gradYear = getGradYear(p);
+      var slug     = linkedinSlug(p.linkedin_url);
+      var init     = initials(p);
+
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td><div class="name-cell"><div class="avatar">' + esc(init) + '</div><div class="name-text">' + esc(name) + '</div></div></td>' +
+        '<td style="color:var(--text-secondary)">' + esc(title) + '</td>' +
+        '<td style="color:var(--text-secondary)">' + esc(firm) + '</td>' +
+        '<td><span class="year-badge">' + (gradYear || '—') + '</span></td>' +
+        '<td style="color:var(--text-secondary)">' + esc(loc) + '</td>' +
+        '<td>' + (slug
+          ? '<a class="linkedin-btn" href="https://linkedin.com/in/' + esc(slug) + '" target="_blank" rel="noopener"><svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854zm4.943 12.248V6.169H2.542v7.225zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248S2.4 3.226 2.4 3.934c0 .694.521 1.248 1.327 1.248zm4.882 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016l.016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225z"/></svg>LinkedIn</a>'
+          : '<span class="muted">—</span>') + '</td>';
+      body.appendChild(tr);
+    });
+  }
+
+  // ── Export ─────────────────────────────────────────────────────────────────
+  document.getElementById('exportBtn').addEventListener('click', function() {
+    var people = window._currentResults || [];
+    if (!people.length) return;
+    var headers = ['First Name','Last Name','Title','Firm','Grad Year','Location','LinkedIn'];
+    var rows = people.map(function(p) { return [
+      p.first_name || '', p.last_name || '', p.job_title || '',
+      p._firm || '', getGradYear(p) || '', getLocation(p) || '', p.linkedin_url || ''
+    ]; });
+    var csv = [headers].concat(rows).map(function(r) {
+      return r.map(function(c) { return '"' + String(c).replace(/"/g,'""') + '"'; }).join(',');
+    }).join('\n');
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+    a.download = 'cornell_alumni_' + new Date().toISOString().slice(0,10) + '.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  });
+
+})();
+</script>
+</body>
+</html>

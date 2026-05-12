@@ -134,7 +134,11 @@
 
 <div class="topbar">
   <div class="topbar-brand">Shortlist</div>
-  <div class="topbar-right">
+  <nav style="display:flex;gap:4px;margin-left:16px">
+    <a href="app.html" style="font-size:13px;color:var(--text-primary);font-weight:500;padding:4px 8px;border-radius:var(--radius-md);text-decoration:none;background:var(--bg-secondary)">Search</a>
+    <a href="dashboard.html" style="font-size:13px;color:var(--text-secondary);padding:4px 8px;border-radius:var(--radius-md);text-decoration:none">Dashboard</a>
+  </nav>
+  <div class="topbar-right" style="margin-left:auto">
     <span class="user-pill" id="userEmail">Loading...</span>
     <button class="btn-signout" id="signoutBtn">Sign out</button>
   </div>
