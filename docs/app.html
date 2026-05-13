@@ -305,10 +305,6 @@
       </div>
     </div>
     <div class="search-row">
-      <div class="field">
-        <label for="role">Role / keyword <span style="text-transform:none;font-weight:400;letter-spacing:0">(optional)</span></label>
-        <input type="text" id="role" placeholder="e.g. Investment Banking Analyst, Quantitative Researcher" />
-      </div>
       <div class="field" style="min-width:110px">
         <label for="resultSize">Max results</label>
         <select id="resultSize">
@@ -417,13 +413,12 @@ window.addEventListener('DOMContentLoaded', function() {
       var div = document.createElement('div');
       div.className = 'history-item';
       div.innerHTML =
-        '<div><span class="history-firm">' + esc(h.firm) + '</span> &larr; ' + esc(h.school) + (h.role ? ' &middot; ' + esc(h.role) : '') + '</div>' +
+        '<div><span class="history-firm">' + esc(h.firm) + '</span> &larr; ' + esc(h.school) + '</div>' +
         '<div class="history-meta">' + h.count + ' results &middot; ' + h.date + '</div>';
       div.addEventListener('click', function() {
         document.getElementById('school').value   = h.school;
         document.getElementById('firmInput').value = h.firm;
         document.getElementById('firmValue').value = h.firm;
-        document.getElementById('role').value      = h.role || '';
         runSearch();
       });
       el.appendChild(div);
@@ -670,7 +665,7 @@ window.addEventListener('DOMContentLoaded', function() {
     var school  = schoolValue.value.trim() || schoolRaw;
     var firmRaw = firmInput.value.trim();
     var firm    = firmValue.value.trim() || firmRaw;
-    var role    = document.getElementById('role').value.trim();
+    var role    = '';
     var size    = parseInt(document.getElementById('resultSize').value);
     var btn     = document.getElementById('searchBtn');
 

@@ -213,11 +213,11 @@
       <div class="divider">or</div>
       <div class="field">
         <label for="loginEmail">Email</label>
-        <input type="email" id="loginEmail" />
+        <input type="email" id="loginEmail" name="sl_login_email" autocomplete="off" autocapitalize="none" spellcheck="false" readonly onfocus="this.removeAttribute('readonly')" />
       </div>
       <div class="field">
         <label for="loginPassword">Password</label>
-        <input type="password" id="loginPassword" />
+        <input type="password" id="loginPassword" name="sl_login_password" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')" />
       </div>
       <button class="btn" id="loginBtn" onclick="handleLogin()">Sign in</button>
     </div>
@@ -228,11 +228,11 @@
       <div class="divider">or</div>
       <div class="field">
         <label for="signupEmail">Email</label>
-        <input type="email" id="signupEmail" />
+        <input type="email" id="signupEmail" name="sl_signup_email" autocomplete="off" autocapitalize="none" spellcheck="false" readonly onfocus="this.removeAttribute('readonly')" />
       </div>
       <div class="field">
         <label for="signupPassword">Password</label>
-        <input type="password" id="signupPassword" />
+        <input type="password" id="signupPassword" name="sl_signup_password" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')" />
       </div>
       <button class="btn" id="signupBtn" onclick="handleSignup()">Create account</button>
     </div>
