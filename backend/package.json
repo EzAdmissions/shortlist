@@ -1,8 +1,14 @@
 {
+  "scripts": {
+    "start": "node server.js",
+    "worker": "node worker.js"
+  },
   "dependencies": {
+    "bullmq": "^5.34.2",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "ioredis": "^5.5.0",
     "node-fetch": "^3.3.2"
   }
 }
