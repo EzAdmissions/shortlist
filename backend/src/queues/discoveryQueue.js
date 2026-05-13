@@ -1,10 +1,7 @@
 const { Queue } = require('bullmq');
-const IORedis = require('ioredis');
+const { createRedisConnection } = require('./redisConnection');
 
-const connection = new IORedis(process.env.REDIS_URL, {
-  maxRetriesPerRequest: null,
-  enableReadyCheck: false,
-});
+const connection = createRedisConnection();
 
 const discoveryQueue = new Queue('discovery', { connection });
 

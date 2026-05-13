@@ -169,12 +169,17 @@ app.post('/api/search-v2', async (req, res) => {
       });
     }
 
-    const job = await discoveryQueue.add('discovery', {
-      school,
-      firm,
-      role,
-      createdAt: new Date().toISOString(),
-    });
+    const job = await Promise.race([
+      discoveryQueue.add('discovery', {
+        school,
+        firm,
+        role,
+        createdAt: new Date().toISOString(),
+      }),
+      new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Timed out while queueing discovery job')), 10000);
+      }),
+    ]);
 
     res.json({
       status: 'processing',

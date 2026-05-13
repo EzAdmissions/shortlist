@@ -3,17 +3,14 @@ require('dotenv').config();
 console.log('REDIS_URL loaded?', !!process.env.REDIS_URL);
 
 const { Worker } = require('bullmq');
-const IORedis = require('ioredis');
 const { buildQueries } = require('./src/services/queryBuilder');
 const { searchBrave } = require('./src/services/searchProvider');
 const { extractRecords } = require('./src/services/resultExtractor');
 const { saveRawProfiles } = require('./src/services/supabaseWriter');
 const { normalizeSearchInput } = require('./src/services/searchInput');
+const { createRedisConnection } = require('./src/queues/redisConnection');
 
-const connection = new IORedis(process.env.REDIS_URL, {
-  maxRetriesPerRequest: null,
-  enableReadyCheck: false,
-});
+const connection = createRedisConnection();
 
 const worker = new Worker(
   'discovery',
