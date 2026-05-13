@@ -1,11 +1,20 @@
 require('dotenv').config();
 const express = require('express');
 const cors    = require('cors');
+const { discoveryQueue } = require('./src/queues/discoveryQueue');
+const { readRawProfiles, groupRawProfiles } = require('./src/services/profileReader');
+const { normalizeSearchInput } = require('./src/services/searchInput');
 
 const app = express();
 
 app.use(cors({
-  origin: ['https://ezadmissions.github.io', 'http://localhost:3000'],
+  origin: [
+    'https://ezadmissions.github.io',
+    'http://localhost:3000',
+    'http://localhost:5500',
+    'http://127.0.0.1:5500',
+    'null',
+  ],
   methods: ['GET', 'POST', 'DELETE'],
   allowedHeaders: ['Content-Type']
 }));
@@ -79,6 +88,133 @@ async function fetchFromPDL(firm, size = 100) {
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get('/', (req, res) => {
   res.json({ status: 'Shortlist backend running' });
+});
+
+app.post('/api/test-job', async (req, res) => {
+  try {
+    const { school, firm, role } = normalizeSearchInput(req.body, {
+      school: 'Cornell University',
+      firm: 'Goldman Sachs',
+      role: 'analyst',
+    });
+
+    const job = await Promise.race([
+      discoveryQueue.add('test', {
+        school,
+        firm,
+        role,
+        createdAt: new Date().toISOString(),
+      }),
+      new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Timed out while queueing test job')), 10000);
+      }),
+    ]);
+
+    res.json({
+      queued: true,
+      jobId: job.id,
+    });
+  } catch (err) {
+    console.error('Test job enqueue error:', err.message);
+    res.status(500).json({
+      queued: false,
+      error: err.message,
+    });
+  }
+});
+
+app.get('/api/discovered-profiles', async (req, res) => {
+  const { school, firm, role, limit } = normalizeSearchInput(req.query);
+
+  if (!school || !firm) {
+    return res.status(400).json({ error: 'school and firm are required' });
+  }
+
+  try {
+    const profiles = await readRawProfiles({ school, firm, role, limit });
+    const grouped = groupRawProfiles(profiles);
+
+    res.json({
+      ...grouped,
+    });
+  } catch (err) {
+    console.error('Discovered profiles read error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/search-v2', async (req, res) => {
+  const { school, firm, role, limit } = normalizeSearchInput(req.body);
+  const refresh = req.body?.refresh === true;
+
+  if (!school || !firm) {
+    return res.status(400).json({ error: 'school and firm are required' });
+  }
+
+  try {
+    const profiles = await readRawProfiles({ school, firm, role, limit });
+    const grouped = groupRawProfiles(profiles);
+    console.log('[search-v2] cache lookup:', {
+      school,
+      firm,
+      role,
+      limit,
+      matches: grouped.total,
+    });
+
+    if (grouped.total && !refresh) {
+      return res.json({
+        ...grouped,
+        fromCache: true,
+      });
+    }
+
+    const job = await discoveryQueue.add('discovery', {
+      school,
+      firm,
+      role,
+      createdAt: new Date().toISOString(),
+    });
+
+    res.json({
+      status: 'processing',
+      fromCache: false,
+      jobId: job.id,
+    });
+  } catch (err) {
+    console.error('Search v2 error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/jobs/:id', async (req, res) => {
+  try {
+    const job = await discoveryQueue.getJob(req.params.id);
+
+    if (!job) {
+      return res.status(404).json({ error: 'job not found' });
+    }
+
+    const state = await job.getState();
+    const returnValue = job.returnvalue || null;
+
+    res.json({
+      id: job.id,
+      name: job.name,
+      state,
+      data: job.data,
+      progress: job.progress,
+      attemptsMade: job.attemptsMade,
+      failedReason: job.failedReason || null,
+      processedOn: job.processedOn || null,
+      finishedOn: job.finishedOn || null,
+      result: returnValue,
+      count: returnValue?.count ?? returnValue?.saved ?? 0,
+    });
+  } catch (err) {
+    console.error('Job status error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ── Search with cache ─────────────────────────────────────────────────────────

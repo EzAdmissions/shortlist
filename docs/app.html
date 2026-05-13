@@ -126,6 +126,146 @@
     .history-item:hover { border-color: var(--border-mid); }
     .history-firm { font-weight: 500; }
     .history-meta { font-size: 12px; color: var(--text-muted); }
+
+    /* Classic desktop treatment */
+    :root {
+      --bg: #ffffff;
+      --bg-secondary: #ffffff;
+      --bg-tertiary: #000000;
+      --text-primary: #000000;
+      --text-secondary: #000000;
+      --text-muted: #000000;
+      --border: #000000;
+      --border-mid: #000000;
+      --accent: #000000;
+      --accent-fg: #ffffff;
+      --danger: #000000;
+      --radius-md: 0;
+      --radius-lg: 0;
+      --font: "MS Sans Serif", Tahoma, Arial, sans-serif;
+      --font-mono: "Courier New", monospace;
+    }
+    body { background: #ffffff; }
+    .topbar {
+      height: 40px;
+      border: 2px solid #000000;
+      border-left: none;
+      border-right: none;
+      padding: 0 12px;
+      position: static;
+    }
+    .topbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 15px;
+      letter-spacing: 0;
+    }
+    .logo-mark {
+      width: 18px;
+      height: 18px;
+      border: 2px solid #000000;
+      display: inline-grid;
+      place-items: center;
+      font-size: 12px;
+      line-height: 1;
+      font-weight: 700;
+      background: #ffffff;
+      color: #000000;
+    }
+    .main { max-width: 1180px; padding: 18px 14px 36px; }
+    .page-title { font-size: 24px; font-weight: 700; margin-bottom: 14px; }
+    .page-sub { display: none; }
+    .card {
+      border: 2px solid #000000;
+      padding: 12px;
+      margin-bottom: 14px;
+      background: #ffffff;
+    }
+    .card-title {
+      color: #ffffff;
+      background: #000000;
+      padding: 4px 8px;
+      margin: -12px -12px 12px;
+      font-size: 12px;
+      letter-spacing: 0;
+    }
+    .field {
+      padding: 0;
+      background: #ffffff;
+    }
+    label {
+      color: #000000;
+      letter-spacing: 0;
+      font-size: 11px;
+      background: #ffffff;
+      display: inline-block;
+      width: fit-content;
+      padding: 0 4px;
+      margin-left: 8px;
+      margin-bottom: -7px;
+      position: relative;
+      z-index: 2;
+    }
+    input, select {
+      border: none;
+      border-bottom: 2px solid #000000;
+      height: 34px;
+      background: #ffffff;
+      color: #000000;
+      font-size: 14px;
+      border-radius: 0;
+    }
+    input:focus, select:focus { outline: none; background: #ffffff; }
+    .btn {
+      border: 2px solid #000000;
+      border-radius: 0;
+      background: #ffffff;
+      color: #000000;
+      box-shadow: inset -2px -2px 0 #000000;
+      height: 38px;
+    }
+    .btn-primary {
+      background: #000000;
+      color: #ffffff;
+      box-shadow: none;
+    }
+    .autocomplete-list {
+      border: 2px solid #000000;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    .autocomplete-item { border-bottom: 1px solid #000000; }
+    .autocomplete-item:hover, .autocomplete-item.ac-active {
+      background: #000000;
+      color: #ffffff;
+    }
+    .status { color: #000000; }
+    .progress-wrap { border: 1px solid #000000; border-radius: 0; background: #ffffff; }
+    .progress-bar { background: #000000; border-radius: 0; }
+    .table-wrap { border: 2px solid #000000; border-radius: 0; }
+    th {
+      background: #000000;
+      color: #ffffff;
+      border-bottom: 2px solid #000000;
+      letter-spacing: 0;
+    }
+    td { border-bottom: 1px solid #000000; }
+    tr:hover td { background: #ffffff; }
+    .name-cell { gap: 0; }
+    .avatar { display: none; }
+    .linkedin-btn {
+      border-radius: 0;
+      background: #000000;
+      color: #ffffff;
+    }
+    .user-pill {
+      border: 2px solid #000000;
+      border-radius: 0;
+      background: #ffffff;
+      color: #000000;
+    }
+    .btn-signout { color: #000000; border: 1px solid #000000; border-radius: 0; }
   </style>
   <script>window.__nativeFetch = window.fetch.bind(window);</script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -133,10 +273,9 @@
 <body>
 
 <div class="topbar">
-  <div class="topbar-brand">Shortlist</div>
+  <div class="topbar-brand"><span class="logo-mark">S</span>Shortlist</div>
   <nav style="display:flex;gap:4px;margin-left:16px">
     <a href="app.html" style="font-size:13px;color:var(--text-primary);font-weight:500;padding:4px 8px;border-radius:var(--radius-md);text-decoration:none;background:var(--bg-secondary)">Search</a>
-    <a href="dashboard.html" style="font-size:13px;color:var(--text-secondary);padding:4px 8px;border-radius:var(--radius-md);text-decoration:none">Dashboard</a>
   </nav>
   <div class="topbar-right" style="margin-left:auto">
     <span class="user-pill" id="userEmail">Loading...</span>
@@ -145,16 +284,18 @@
 </div>
 
 <div class="main">
-  <h1 class="page-title">Cornell alumni search</h1>
-  <p class="page-sub">Search where Cornell alumni work across top finance firms</p>
+  <h1 class="page-title">Alumni Search</h1>
+  <p class="page-sub"></p>
 
   <!-- Search -->
   <div class="card">
     <div class="card-title">Search</div>
     <div class="grid-2">
-      <div class="field">
+      <div class="field" id="schoolField">
         <label for="school">School</label>
-        <input type="text" id="school" value="Cornell University" readonly style="color:var(--text-secondary);cursor:default" />
+        <input type="text" id="school" value="Cornell University" autocomplete="off" />
+        <input type="hidden" id="schoolValue" value="Cornell University" />
+        <div class="autocomplete-list" id="schoolDropdown"></div>
       </div>
       <div class="field" id="firmField">
         <label for="firmInput">Target firm</label>
@@ -205,11 +346,10 @@
       <table>
         <thead>
           <tr>
-            <th style="width:25%">Name</th>
-            <th style="width:25%">Title</th>
+            <th style="width:32%">Name</th>
+            <th style="width:32%">Title</th>
             <th style="width:20%">Location</th>
-            <th style="width:15%">LinkedIn</th>
-            <th style="width:15%">Grad Year</th>
+            <th style="width:16%">LinkedIn</th>
           </tr>
         </thead>
         <tbody id="resultsBody"></tbody>
@@ -225,7 +365,9 @@ window.addEventListener('DOMContentLoaded', function() {
   var nativeFetch = window.__nativeFetch || window.fetch.bind(window);
   var SUPABASE_URL  = 'https://mjmgwwhzovqnvedisaow.supabase.co';
   var SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qbWd3d2h6b3ZxbnZlZGlzYW93Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MTQ4MjQsImV4cCI6MjA5NDA5MDgyNH0.IpscZzKQWvozWkJgwSiJYC5rBRBcMOnqnJohCgtohIw';
-  var BACKEND       = 'https://shortlist-backend-8hlg.onrender.com';
+  var BACKEND       = (window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://localhost:3001'
+    : 'https://shortlist-backend-8hlg.onrender.com';
 
   var sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   var currentResults  = [];
@@ -288,12 +430,153 @@ window.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // ── Firms autocomplete (only cached firms) ───────────────────────────────
+  // ── Autocomplete ─────────────────────────────────────────────────────────
+  var SCHOOLS = [
+    'Amherst College',
+    'Babson College',
+    'Barnard College',
+    'Bentley University',
+    'Boston College',
+    'Boston University',
+    'Bowdoin College',
+    'Brandeis University',
+    'Brown University',
+    'California Institute of Technology',
+    'Carnegie Mellon University',
+    'Claremont McKenna College',
+    'Colby College',
+    'Colgate University',
+    'Columbia University',
+    'Cornell University',
+    'Dartmouth College',
+    'Duke University',
+    'Emory University',
+    'Fordham University',
+    'Georgetown University',
+    'Georgia Institute of Technology',
+    'Hamilton College',
+    'Harvard University',
+    'Harvey Mudd College',
+    'Indiana University Bloomington',
+    'Johns Hopkins University',
+    'Lehigh University',
+    'Massachusetts Institute of Technology',
+    'Middlebury College',
+    'New York University',
+    'Northwestern University',
+    'Notre Dame',
+    'Pomona College',
+    'Princeton University',
+    'Rice University',
+    'Stanford University',
+    'Swarthmore College',
+    'Tufts University',
+    'University of California, Berkeley',
+    'University of California, Los Angeles',
+    'University of Cambridge',
+    'University of Chicago',
+    'University of Michigan',
+    'University of North Carolina at Chapel Hill',
+    'University of Notre Dame',
+    'University of Oxford',
+    'University of Pennsylvania',
+    'University of Texas at Austin',
+    'University of Virginia',
+    'University of Wisconsin-Madison',
+    'Vanderbilt University',
+    'Washington University in St. Louis',
+    'Williams College',
+    'Yale University'
+  ];
+
   var FIRMS = [
+    'AQR Capital Management',
+    'Ares Management',
+    'Apollo Global Management',
+    'Barclays',
+    'Bain Capital',
     'Bank of America',
+    'Balyasny Asset Management',
+    'Berkshire Partners',
+    'BlackRock',
     'Blackstone',
+    'Bridgewater Associates',
+    'Centerview Partners',
+    'Charlesbank Capital Partners',
+    'Citadel',
+    'Citadel Securities',
+    'Citi',
+    'Clayton Dubilier & Rice',
+    'Coatue Management',
+    'Credit Suisse',
+    'The Carlyle Group',
+    'D. E. Shaw',
+    'Deutsche Bank',
+    'Dragoneer Investment Group',
+    'Elliott Investment Management',
+    'FT Partners',
+    'Fidelity Investments',
+    'First Round Capital',
+    'Evercore',
+    'General Atlantic',
+    'General Catalyst',
+    'GIC',
+    'Glencore',
     'Goldman Sachs',
-    'Morgan Stanley'
+    'Guggenheim Partners',
+    'Hellman & Friedman',
+    'Houlihan Lokey',
+    'Hudson River Trading',
+    'Insight Partners',
+    'Interactive Brokers',
+    'Jane Street',
+    'Jefferies',
+    'JPMorgan Chase',
+    'Jump Trading',
+    'KKR',
+    'Lazard',
+    'Lightspeed Venture Partners',
+    'Macquarie Group',
+    'Marathon Asset Management',
+    'McKinsey & Company',
+    'Menlo Ventures',
+    'Merrill Lynch',
+    'Millennium Management',
+    'Moelis & Company',
+    'Morgan Stanley',
+    'Neuberger Berman',
+    'Nomura',
+    'Oak Hill Advisors',
+    'Oak Hill Capital',
+    'Oaktree Capital Management',
+    'Optiver',
+    'Perella Weinberg Partners',
+    'Permira',
+    'Point72',
+    'PJT Partners',
+    'Qatalyst Partners',
+    'RBC Capital Markets',
+    'Renaissance Technologies',
+    'Rothschild & Co',
+    'Schonfeld Strategic Advisors',
+    'Sequoia Capital',
+    'Silver Lake',
+    'Sixth Street',
+    'Soros Fund Management',
+    'Squarepoint Capital',
+    'Susquehanna International Group',
+    'TA Associates',
+    'Tiger Global Management',
+    'TPG',
+    'Tower Research Capital',
+    'UBS',
+    'Vista Equity Partners',
+    'Virtu Financial',
+    'Two Sigma',
+    'Warburg Pincus',
+    'Wells Fargo',
+    'William Blair',
+    'Wolverine Trading'
   ];
 
   function fuzzyScore(q, t) {
@@ -305,46 +588,64 @@ window.addEventListener('DOMContentLoaded', function() {
     return qi === ql.length ? 1 : 0;
   }
 
-  function getFirmMatches(q) {
-    if (!q) return FIRMS.slice(0, 8);
-    return FIRMS.map(function(f) { return { f: f, s: fuzzyScore(q, f) }; })
+  function getMatches(list, q) {
+    if (!q) return list.slice(0, 10);
+    return list.map(function(f) { return { f: f, s: fuzzyScore(q, f) }; })
       .filter(function(x) { return x.s > 0; })
       .sort(function(a, b) { return b.s - a.s; })
-      .slice(0, 8).map(function(x) { return x.f; });
+      .slice(0, 10).map(function(x) { return x.f; });
   }
+
+  function getFirmMatches(q) { return getMatches(FIRMS, q); }
+  function getSchoolMatches(q) { return getMatches(SCHOOLS, q); }
+
+  var schoolInput    = document.getElementById('school');
+  var schoolValue    = document.getElementById('schoolValue');
+  var schoolDropdown = document.getElementById('schoolDropdown');
+  var schoolField    = document.getElementById('schoolField');
 
   var firmInput    = document.getElementById('firmInput');
   var firmValue    = document.getElementById('firmValue');
   var firmDropdown = document.getElementById('firmDropdown');
   var firmField    = document.getElementById('firmField');
 
-  firmInput.addEventListener('input',  function() { firmValue.value = ''; renderDropdown(getFirmMatches(firmInput.value), firmInput.value); });
-  firmInput.addEventListener('focus',  function() { renderDropdown(getFirmMatches(firmInput.value), firmInput.value); });
-  firmInput.addEventListener('keydown', function(e) {
-    var items = firmDropdown.querySelectorAll('.autocomplete-item');
+  schoolInput.addEventListener('input', function() { schoolValue.value = ''; renderDropdown(schoolDropdown, getSchoolMatches(schoolInput.value), schoolInput.value, selectSchool); });
+  schoolInput.addEventListener('focus', function() { renderDropdown(schoolDropdown, getSchoolMatches(schoolInput.value), schoolInput.value, selectSchool); });
+  schoolInput.addEventListener('keydown', function(e) { handleAutocompleteKeys(e, schoolDropdown, selectSchool); });
+
+  firmInput.addEventListener('input',  function() { firmValue.value = ''; renderDropdown(firmDropdown, getFirmMatches(firmInput.value), firmInput.value, selectFirm); });
+  firmInput.addEventListener('focus',  function() { renderDropdown(firmDropdown, getFirmMatches(firmInput.value), firmInput.value, selectFirm); });
+  firmInput.addEventListener('keydown', function(e) { handleAutocompleteKeys(e, firmDropdown, selectFirm); });
+  document.addEventListener('click', function(e) {
+    if (!firmField.contains(e.target)) firmDropdown.style.display='none';
+    if (!schoolField.contains(e.target)) schoolDropdown.style.display='none';
+  });
+
+  function handleAutocompleteKeys(e, dropdown, selectFn) {
+    var items = dropdown.querySelectorAll('.autocomplete-item');
     if (e.key === 'ArrowDown') { e.preventDefault(); activeIdx = Math.min(activeIdx+1, items.length-1); items.forEach(function(el,i){el.classList.toggle('ac-active',i===activeIdx);}); }
     else if (e.key === 'ArrowUp') { e.preventDefault(); activeIdx = Math.max(activeIdx-1,-1); items.forEach(function(el,i){el.classList.toggle('ac-active',i===activeIdx);}); }
-    else if (e.key === 'Enter') { if (activeIdx>=0&&items[activeIdx]){e.preventDefault();selectFirm(items[activeIdx].textContent);}else{firmDropdown.style.display='none';runSearch();} }
-    else if (e.key === 'Escape') firmDropdown.style.display = 'none';
-  });
-  document.addEventListener('click', function(e) { if (!firmField.contains(e.target)) firmDropdown.style.display='none'; });
-
-  function renderDropdown(matches, query) {
-    if (!matches.length) { firmDropdown.style.display='none'; return; }
-    activeIdx = -1; firmDropdown.innerHTML = '';
-    matches.forEach(function(firm) {
-      var div = document.createElement('div');
-      div.className = 'autocomplete-item';
-      var q = query.toLowerCase(), pos = firm.toLowerCase().indexOf(q);
-      if (pos >= 0 && q.length > 0) {
-        div.innerHTML = esc(firm.slice(0,pos)) + '<span class="autocomplete-match">'+esc(firm.slice(pos,pos+q.length))+'</span>' + esc(firm.slice(pos+q.length));
-      } else { div.textContent = firm; }
-      div.addEventListener('mousedown', function(e) { e.preventDefault(); selectFirm(firm); });
-      firmDropdown.appendChild(div);
-    });
-    firmDropdown.style.display = 'block';
+    else if (e.key === 'Enter') { if (activeIdx>=0&&items[activeIdx]){e.preventDefault();selectFn(items[activeIdx].textContent);}else{dropdown.style.display='none';runSearch();} }
+    else if (e.key === 'Escape') dropdown.style.display = 'none';
   }
 
+  function renderDropdown(dropdown, matches, query, selectFn) {
+    if (!matches.length) { dropdown.style.display='none'; return; }
+    activeIdx = -1; dropdown.innerHTML = '';
+    matches.forEach(function(value) {
+      var div = document.createElement('div');
+      div.className = 'autocomplete-item';
+      var q = query.toLowerCase(), pos = value.toLowerCase().indexOf(q);
+      if (pos >= 0 && q.length > 0) {
+        div.innerHTML = esc(value.slice(0,pos)) + '<span class="autocomplete-match">'+esc(value.slice(pos,pos+q.length))+'</span>' + esc(value.slice(pos+q.length));
+      } else { div.textContent = value; }
+      div.addEventListener('mousedown', function(e) { e.preventDefault(); selectFn(value); });
+      dropdown.appendChild(div);
+    });
+    dropdown.style.display = 'block';
+  }
+
+  function selectSchool(school) { schoolInput.value=school; schoolValue.value=school; schoolDropdown.style.display='none'; activeIdx=-1; }
   function selectFirm(firm) { firmInput.value=firm; firmValue.value=firm; firmDropdown.style.display='none'; activeIdx=-1; }
 
   // ── Helpers ───────────────────────────────────────────────────────────────
@@ -365,7 +666,8 @@ window.addEventListener('DOMContentLoaded', function() {
   document.getElementById('exportBtn').addEventListener('click', exportCSV);
 
   function runSearch() {
-    var school  = document.getElementById('school').value.trim();
+    var schoolRaw = schoolInput.value.trim();
+    var school  = schoolValue.value.trim() || schoolRaw;
     var firmRaw = firmInput.value.trim();
     var firm    = firmValue.value.trim() || firmRaw;
     var role    = document.getElementById('role').value.trim();
@@ -381,30 +683,23 @@ window.addEventListener('DOMContentLoaded', function() {
     setStatus('<span class="spinner"></span>Searching...', false, true);
     setProgress(10);
 
-    nativeFetch(BACKEND + '/api/search', {
+    nativeFetch(BACKEND + '/api/search-v2', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ school: school, firm: firm, role: role, size: size })
+      body: JSON.stringify({ school: school, firm: firm, role: role, limit: size })
     })
     .then(function(r) { return r.json().then(function(d){return{ok:r.ok,data:d};}); })
     .then(function(res) {
       if (!res.ok) { setStatus(res.data.error||'Search error.', true); setProgress(0); btn.disabled=false; return; }
 
-      var people = res.data.data  || [];
-      var total  = res.data.total || people.length;
+      if (res.data.status === 'processing' && res.data.jobId) {
+        setStatus('<span class="spinner"></span>Discovery in progress...', false, true);
+        setProgress(35);
+        pollJob(res.data.jobId, { school: school, firm: firm, role: role, limit: size, btn: btn });
+        return;
+      }
 
-      if (!people.length) { setStatus('No results. Try the full school name e.g. "Cornell University".', false); setProgress(0); btn.disabled=false; return; }
-
-      currentResults = people.map(function(p){return Object.assign({},p);});
-      renderTable(school, firm, total);
-      document.getElementById('resultsSection').style.display = 'block';
-      setProgress(100);
-      setTimeout(function(){setProgress(0);},600);
-
-      var extra = total > size ? ' PDL has '+total.toLocaleString()+' total — increase max results to see more.' : '';
-      var cacheNote = res.data.fromCache ? ' (from cache)' : ' (live PDL query)';
-      setStatus('Done — '+people.length+' results.'+extra+cacheNote);
-      btn.disabled = false;
+      handleSearchResults(res.data, { school: school, firm: firm, role: role, limit: size, btn: btn });
     })
     .catch(function(err){
       setStatus('Cannot reach the server. Please try again or contact support.', true);
@@ -412,21 +707,124 @@ window.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  function renderTable(school, firm, total) {
+  function pollJob(jobId, ctx) {
+    var attempts = 0;
+
+    function check() {
+      attempts++;
+      nativeFetch(BACKEND + '/api/jobs/' + encodeURIComponent(jobId))
+        .then(function(r) { return r.json().then(function(d){return{ok:r.ok,data:d};}); })
+        .then(function(res) {
+          if (!res.ok) {
+            setStatus(res.data.error || 'Discovery status error.', true);
+            setProgress(0);
+            ctx.btn.disabled = false;
+            return;
+          }
+
+          if (res.data.state === 'completed') {
+            setProgress(80);
+            nativeFetch(BACKEND + '/api/search-v2', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ school: ctx.school, firm: ctx.firm, role: ctx.role, limit: ctx.limit })
+            })
+            .then(function(r) { return r.json().then(function(d){return{ok:r.ok,data:d};}); })
+            .then(function(nextRes) {
+              if (!nextRes.ok) {
+                setStatus(nextRes.data.error || 'Search error.', true);
+                setProgress(0);
+                ctx.btn.disabled = false;
+                return;
+              }
+              handleSearchResults(nextRes.data, ctx);
+            });
+            return;
+          }
+
+          if (res.data.state === 'failed') {
+            setStatus(res.data.failedReason || 'Discovery failed.', true);
+            setProgress(0);
+            ctx.btn.disabled = false;
+            return;
+          }
+
+          setProgress(Math.min(75, 35 + attempts * 5));
+          setTimeout(check, 2500);
+        })
+        .catch(function() {
+          setStatus('Cannot reach the server. Please try again or contact support.', true);
+          setProgress(0);
+          ctx.btn.disabled = false;
+        });
+    }
+
+    setTimeout(check, 2500);
+  }
+
+  function handleSearchResults(data, ctx) {
+      var people = data.profiles || data.data || [];
+      var evidence = data.evidence || [];
+      var total  = data.total || people.length;
+
+      if (!people.length) { setStatus('No results. Try the full school name e.g. "Cornell University".', false); setProgress(0); ctx.btn.disabled=false; return; }
+
+      currentResults = people.map(function(p){return Object.assign({},p);});
+      renderTable(ctx.school, ctx.firm, total, evidence.length);
+      document.getElementById('resultsSection').style.display = 'block';
+      setProgress(100);
+      setTimeout(function(){setProgress(0);},600);
+
+      var extra = evidence.length ? ' +' + evidence.length + ' supporting source' + (evidence.length !== 1 ? 's' : '') + '.' : '';
+      var cacheNote = data.fromCache ? ' (from cache)' : '';
+      setStatus('Done — '+people.length+' profile'+(people.length !== 1 ? 's' : '')+'.'+extra+cacheNote);
+      ctx.btn.disabled = false;
+  }
+
+  function getProfileName(p) {
+    return p.full_name_guess || [p.first_name, p.last_name].filter(Boolean).join(' ') || 'Unknown';
+  }
+
+  function getProfileTitle(p) {
+    var title = p.title_guess || p.job_title || '';
+    var name = getProfileName(p);
+    if (!title || title.toLowerCase() === name.toLowerCase()) return '—';
+    return title;
+  }
+
+  function getProfileCompany(p, fallback) {
+    return p.company_name || p.job_company_name || fallback || '—';
+  }
+
+  function getProfileLinkedIn(p) {
+    if (p.source_url && p.source_url.indexOf('linkedin.com/in') !== -1) return p.source_url;
+    return p.linkedin_url || null;
+  }
+
+  function getProfileLocation(p) {
+    var source = p.source_snippet || '';
+    var match = source.match(/Location:\s*([^·.]+)/i);
+    return match ? match[1].trim() : getLocation(p);
+  }
+
+  function getProfileInitials(p) {
+    var name = getProfileName(p).trim().split(/\s+/);
+    return ((name[0] ? name[0][0] : '') + (name.length > 1 ? name[name.length - 1][0] : '')).toUpperCase() || '?';
+  }
+
+  function renderTable(school, firm, total, evidenceCount) {
     var body=document.getElementById('resultsBody'), count=document.getElementById('resultCount'), n=currentResults.length;
-    count.innerHTML='<strong>'+n+'</strong> result'+(n!==1?'s':'')+(total>n?' of <strong>'+total.toLocaleString()+'</strong> total':'')+' &mdash; '+esc(school)+' &rarr; '+esc(firm);
+    count.innerHTML='<strong>'+n+'</strong> profile'+(n!==1?'s':'')+(total>n?' of <strong>'+total.toLocaleString()+'</strong> total':'')+' &mdash; '+esc(school)+' &rarr; '+esc(firm)+(evidenceCount?' &middot; '+evidenceCount+' supporting source'+(evidenceCount!==1?'s':''):'');
     body.innerHTML='';
     currentResults.forEach(function(p,i){
-      var name=([p.first_name,p.last_name].filter(Boolean).join(' '))||'Unknown';
-      var title=p.job_title||'—', company=p.job_company_name||firm, loc=getLocation(p), li=p.linkedin_url||null, init=initials(p.first_name,p.last_name);
-      var gradYear = getGradYear(p);
+      var name=getProfileName(p);
+      var title=getProfileTitle(p), company=getProfileCompany(p, firm), loc=getProfileLocation(p), li=getProfileLinkedIn(p);
       var tr=document.createElement('tr');
       tr.innerHTML=
-        '<td><div class="name-cell"><div class="avatar">'+esc(init)+'</div><div><div class="name-text">'+esc(name)+'</div><div class="name-sub">'+esc(company)+'</div></div></div></td>'+
+        '<td><div class="name-cell"><div><div class="name-text">'+esc(name)+'</div><div class="name-sub">'+esc(company)+'</div></div></div></td>'+
         '<td style="font-size:13px;color:var(--text-secondary)">'+esc(title)+'</td>'+
         '<td style="font-size:13px;color:var(--text-secondary)">'+esc(loc)+'</td>'+
-        '<td>'+(li?'<a class="linkedin-btn" href="https://www.linkedin.com/in/'+esc(linkedinSlug(li))+'" target="_blank" rel="noopener noreferrer"><svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854zm4.943 12.248V6.169H2.542v7.225zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248S2.4 3.226 2.4 3.934c0 .694.521 1.248 1.327 1.248zm4.882 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016l.016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225z"/></svg>LinkedIn</a>':'<span class="muted">—</span>')+'</td>'+
-        '<td style="font-size:13px;color:var(--text-secondary)">'+esc(gradYear)+'</td>';
+        '<td>'+(li?'<a class="linkedin-btn" href="https://www.linkedin.com/in/'+esc(linkedinSlug(li))+'" target="_blank" rel="noopener noreferrer"><svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854zm4.943 12.248V6.169H2.542v7.225zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248S2.4 3.226 2.4 3.934c0 .694.521 1.248 1.327 1.248zm4.882 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016l.016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225z"/></svg>LinkedIn</a>':'<span class="muted">—</span>')+'</td>';
       body.appendChild(tr);
     });
   }
@@ -434,12 +832,12 @@ window.addEventListener('DOMContentLoaded', function() {
   // ── Export ────────────────────────────────────────────────────────────────
   function exportCSV() {
     if (!currentResults.length) return;
-    var headers=['Name','First Name','Last Name','Title','Company','Location','LinkedIn','Grad Year'];
+    var headers=['Name','First Name','Last Name','Title','Company','Location','LinkedIn'];
     var rows=currentResults.map(function(p){return[
-      [p.first_name,p.last_name].filter(Boolean).join(' '),
+      getProfileName(p),
       p.first_name||'',p.last_name||'',
-      p.job_title||'',p.job_company_name||'',
-      getLocation(p),p.linkedin_url||'',getGradYear(p)
+      getProfileTitle(p),getProfileCompany(p, ''),
+      getProfileLocation(p),getProfileLinkedIn(p)||''
     ];});
     var csv=[headers].concat(rows).map(function(r){return r.map(function(c){return'"'+String(c).replace(/"/g,'""')+'"';}).join(',');}).join('\n');
     var blob=new Blob([csv],{type:'text/csv'}), url=URL.createObjectURL(blob), a=document.createElement('a');
